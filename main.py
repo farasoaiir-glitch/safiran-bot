@@ -1,30 +1,38 @@
-from flask import Flask, request, jsonify
+import requests
+from flask import Flask, request
 
 app = Flask(__name__)
+TOKEN = 'BJFCA0MZLWQJYKFICLHJDIYHPUUTWZPYVGAXWOUYNDDIRWALLBTLAFESISOVDMRS'
+API_URL = 'https://messengerg2c39.iranlms.ir/'
 
-@app.route('/')
-def home():
-    return 'Bot is running.'
-
-@app.route('/receiveUpdate', methods=['POST'])
-def receive_update():
-    data = request.get_json()
-    user_id = data.get('user_id')
-    message = data.get('message')
-
-    response = {
-        "receiver_id": user_id,
-        "type": "message",
-        "body": {
-            "text": "🎉 خوش آمدید به بات سفیران صفوی!",
-            "buttons": [
-                {"text": "📰 اخبار", "url": "https://safiran.ir/news"},
-                {"text": "📜 درباره ما", "url": "https://safiran.ir/about"}
-            ]
-        }
+def send_message(chat_id, text, buttons=None):
+    payload = {
+        'chat_id': chat_id,
+        'text': text,
+        'type': 'text',
     }
+    if buttons:
+        payload['btn'] = buttons
+    requests.post(API_URL + 'sendMessage', json=payload)
 
-    return jsonify(response)
+@app.route('/', methods=['POST'])
+def webhook():
+    update = request.get_json()
+    chat_id = update.get('chat_id')
+    data = update.get('data', '')
+
+    if data == '/start':
+        buttons = [[{'text': 'شروع', 'command': 'start_bot'}]]
+        send_message(chat_id, '🎖 خوش آمدی به پایگاه رسمی اتحادیه سفیران صفوی.\nبرای دریافت مأموریت، دکمه را بزن.', buttons)
+
+    elif data == 'start_bot':
+        buttons = [[{'text': 'ارسال گزارش', 'command': 'report'}]]
+        send_message(chat_id, '📡 مأموریت امروز:\nانتشار پیام رسمی در ۳ گروه روبیکا.\nپس از انجام، دکمه "ارسال گزارش" را بزن.', buttons)
+
+    elif data == 'report':
+        send_message(chat_id, '✅ گزارش دریافت شد.\nامتیاز شما ثبت شد. منتظر مأموریت بعدی باشید.')
+
+    return 'ok'
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=8080)
