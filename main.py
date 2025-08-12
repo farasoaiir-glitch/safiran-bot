@@ -1,38 +1,30 @@
-import requests
-from flask import Flask, request
+from rubka import Robot
+from rubka.context import Message
 
-app = Flask(__name__)
-TOKEN = 'BJFCA0MZLWQJYKFICLHJDIYHPUUTWZPYVGAXWOUYNDDIRWALLBTLAFESISOVDMRS'
-API_URL = 'https://messengerg2c39.iranlms.ir/'
+bot = Robot("BJFCA0MZLWQJYKFICLHJDIYHPUUTWZPYVGAXWOUYND>
 
-def send_message(chat_id, text, buttons=None):
-    payload = {
-        'chat_id': chat_id,
-        'text': text,
-        'type': 'text',
-    }
-    if buttons:
-        payload['btn'] = buttons
-    requests.post(API_URL + 'sendMessage', json=payload)
+@bot.on_message()
+def handler(bot: Robot, message: Message):
+    text = (message.text or "").strip().lower()
 
-@app.route('/', methods=['POST'])
-def webhook():
-    update = request.get_json()
-    chat_id = update.get('chat_id')
-    data = update.get('data', '')
+    if text == "/start":
+        return message.reply(
+            "سلام 👋 به ربات سفیران صفوی خوش اومدی!\n\n"
+            "برای دریافت لینک‌ها، یکی از دستورات زیر رو >
+            "- `گروه`\n"
+            "- `کانال`\n"
+            "- `سایت`"
+        )
 
-    if data == '/start':
-        buttons = [[{'text': 'شروع', 'command': 'start_bot'}]]
-        send_message(chat_id, '🎖 خوش آمدی به پایگاه رسمی اتحادیه سفیران صفوی.\nبرای دریافت مأموریت، دکمه را بزن.', buttons)
+    if text == "گروه":
+        return message.reply("👥 لینک گروه:\nhttps://ru>
 
-    elif data == 'start_bot':
-        buttons = [[{'text': 'ارسال گزارش', 'command': 'report'}]]
-        send_message(chat_id, '📡 مأموریت امروز:\nانتشار پیام رسمی در ۳ گروه روبیکا.\nپس از انجام، دکمه "ارسال گزارش" را بزن.', buttons)
+    if text == "کانال":
+        return message.reply("📢 لینک کانال:\nhttps://r>
 
-    elif data == 'report':
-        send_message(chat_id, '✅ گزارش دریافت شد.\nامتیاز شما ثبت شد. منتظر مأموریت بعدی باشید.')
+    if text == "سایت":
+        return message.reply("🌐 سایت:\nhttps://safiran>
 
-    return 'ok'
+    return message.reply("⛔ دستور نامعتبر بود. لطفاً یک>
 
-if __name__ == '__main__':
-    app.run(port=8080)
+bot.run()
